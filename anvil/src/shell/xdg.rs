@@ -33,8 +33,8 @@ use crate::{
 };
 
 use super::{
-    fullscreen_output_geometry, place_new_window, FullscreenSurface, MoveSurfaceGrab, ResizeData,
-    ResizeState, ResizeSurfaceGrab, SurfaceData, WindowElement,
+    fullscreen_output_geometry, FullscreenSurface, MoveSurfaceGrab, ResizeData, ResizeState,
+    ResizeSurfaceGrab, SurfaceData, WindowElement,
 };
 
 impl<BackendData: Backend> XdgShellHandler for AnvilState<BackendData> {
@@ -47,7 +47,7 @@ impl<BackendData: Backend> XdgShellHandler for AnvilState<BackendData> {
         // of a xdg_surface has to be sent during the commit if
         // the surface is not already configured
         let window = WindowElement::Wayland(Window::new(surface));
-        place_new_window(&mut self.space, self.pointer.current_location(), &window, true);
+        self.place_new_window_with_default_activation(&window);
     }
 
     fn new_popup(&mut self, surface: PopupSurface, _positioner: PositionerState) {

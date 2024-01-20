@@ -16,7 +16,7 @@ use smithay::{
             Client, Resource,
         },
     },
-    utils::{Logical, Point, Rectangle, Size},
+    utils::{Logical, Point, Rectangle, Size, SERIAL_COUNTER as SCOUNTER},
     wayland::{
         buffer::BufferHandler,
         compositor::{
@@ -38,6 +38,7 @@ use smithay::{
 #[cfg(feature = "xwayland")]
 use crate::CalloopData;
 use crate::{
+    focus::FocusTarget,
     state::{AnvilState, Backend},
     ClientState,
 };
@@ -199,6 +200,24 @@ impl<BackendData: Backend> AnvilState<BackendData> {
             .elements()
             .find(|window| window.wl_surface().map(|s| s == *surface).unwrap_or(false))
             .cloned()
+    }
+
+    /// Place a window in the space and apply default activation behavior.
+    ///
+    /// It may be desirable to implement smarter logic for determining
+    /// whether to activate the window, to prevent rogue applications
+    /// from stealing the user's focus (both visual and input).
+    /// Note, though, that the new window should receive keyboard focus
+    /// if and only if it's activated.
+    pub fn place_new_window_with_default_activation(&mut self, window: &WindowElement) {
+        place_new_window(&mut self.space, self.pointer.current_location(), window, true);
+        if let Some(keyboard) = self.seat.get_keyboard() {
+            keyboard.set_focus(
+                self,
+                Some(FocusTarget::Window(window.clone())),
+                SCOUNTER.next_serial(),
+            );
+        }
     }
 }
 

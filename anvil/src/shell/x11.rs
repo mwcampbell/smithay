@@ -26,8 +26,8 @@ use tracing::{error, trace};
 use crate::{focus::FocusTarget, state::Backend, AnvilState, CalloopData};
 
 use super::{
-    place_new_window, FullscreenSurface, MoveSurfaceGrab, ResizeData, ResizeState, ResizeSurfaceGrab,
-    SurfaceData, WindowElement,
+    FullscreenSurface, MoveSurfaceGrab, ResizeData, ResizeState, ResizeSurfaceGrab, SurfaceData,
+    WindowElement,
 };
 
 #[derive(Debug, Default)]
@@ -53,12 +53,7 @@ impl<BackendData: Backend> XwmHandler for CalloopData<BackendData> {
     fn map_window_request(&mut self, _xwm: XwmId, window: X11Surface) {
         window.set_mapped(true).unwrap();
         let window = WindowElement::X11(window);
-        place_new_window(
-            &mut self.state.space,
-            self.state.pointer.current_location(),
-            &window,
-            true,
-        );
+        self.state.place_new_window_with_default_activation(&window);
         let bbox = self.state.space.element_bbox(&window).unwrap();
         let WindowElement::X11(xsurface) = &window else {
             unreachable!()
